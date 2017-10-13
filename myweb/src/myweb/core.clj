@@ -2,6 +2,7 @@
   (:require [ring.adapter.jetty :as jetty]
             [ring.middleware.params :refer [wrap-params]]))
 
+;; http://localhost:3000/?name=Jaba => Hallöchenke, Jaba
 (defn myapp [request]
   (str "Hallöchenke, " (get (:params request) "name")))
 
