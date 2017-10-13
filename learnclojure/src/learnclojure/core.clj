@@ -1,10 +1,15 @@
-(ns learnclojure.core
-  (:require [clojure.string :refer [split]])
-  (:import [java.util.Date])
-  )
+(ns learnclojure.core)
 
-;; (require '[clojure.string :refer [split]])
-;; (import 'java.util.Date)
+(defn foo
+  "I don't do a whole lot."
+  [x]
+  (println x "Hello, World!"))
 
-(split "a,b,c" #",") ;; => ["a" "b" "c"]
-(Date.) ;; => #inst "2017-10-13T07:35:44.108-00:00"
+(comment
+
+(require '[clojure.test :refer [is testing]])
+
+(testing "Make sure foo works"
+(is (= (foo "") "Hello, World!")) ;; true
+(is (= (foo "Hey, ") "Hey, Hello, World!"))) ;; true
+)
