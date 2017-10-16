@@ -1,23 +1,21 @@
 (ns myweb.core
-  (:require [ring.adapter.jetty :as jetty]
-            [ring.middleware.params :refer [wrap-params]]))
+  (:require [selmer.parser :as tmpl]))
 
-;; http://localhost:3000/?name=Jaba => Hallöchenke, Jaba
-(defn myapp [request]
-  (str "Hallöchenke, " (get (:params request) "name")))
+(tmpl/render"<h1>Hello, {{ name }}</h1>" {:name "Froosh"})
 
-(defn string-response-middleware [handler]
-  (fn [request]
-    (let [response (handler request)]
-      (if (instance? String response)
-       {:body response
-        :status 200
-        :headers {"Content-Type" "text/html"}}
-        response))))
+(tmpl/render-file "hello.html" {:name "Frannie"})
 
-(def handler
-  (-> myapp
-      string-response-middleware
-      wrap-params))
-(defn -main []
-  (jetty/run-jetty handler {:port 3000}))
+;; (require '[clojure.java.io :as io])
+;; (tmpl/set-resource-path! (io/resource "templates"))
+
+(defn myapp [{{name "name"} :params}]
+  (respond-tmpl "hello.html" {:name name}))
+
+(defn respond-html [s]
+  {:body s
+   :status 200
+   :header {"Content-Type" "text-html"}})
+
+(def respond-tmpl (comp respond-html tmpl/render-file))
+
+(myapp {:params {"name" "Joe"}})
