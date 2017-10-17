@@ -1,21 +1,41 @@
 (ns myweb.core
-  (:require [selmer.parser :as tmpl]))
+  (:require [hiccup.core :as h]
+            [hiccup.core :as hf]))
 
-(tmpl/render"<h1>Hello, {{ name }}</h1>" {:name "Froosh"})
+(h/html
+  [:h1 {:class "foo"} "Hello, World"])
 
-(tmpl/render-file "hello.html" {:name "Frannie"})
+(h/html
+  [:h1#foo.bar "Hello"])
 
-;; (require '[clojure.java.io :as io])
-;; (tmpl/set-resource-path! (io/resource "templates"))
+(h/html
+  [:section
+   [:p "Paragraph 1"]
+   [:p "Paragraph 2"]])
 
-(defn myapp [{{name "name"} :params}]
-  (respond-tmpl "hello.html" {:name name}))
+(h/html
+  [:ul
+   (for [item ["foo" "bar" "baz"]]
+     [:li item])])
 
-(defn respond-html [s]
-  {:body s
-   :status 200
-   :header {"Content-Type" "text-html"}})
+(h/html
+  [:fieldset
+   [:label "Name"]
+   (hf/text-field "name" "Value")])
 
-(def respond-tmpl (comp respond-html tmpl/render-file))
+(h/html
+  [:fieldset
+   (hf/drop-down "favorite-color"
+                  ["red" ["Blue" "blue"] ["Verde" "green"]])])
 
-(myapp {:params {"name" "Joe"}})
+(defn layout [content & options]
+  (let [opts (apply hash-map options)]
+    (h/html
+     [:html
+      [:head
+        :title (get opts :title "Hello, World")]]
+      [:body [:main content]])))
+(layout [:p "Hello"] :title "Hi")
+
+
+
