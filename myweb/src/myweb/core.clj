@@ -1,41 +1,38 @@
 (ns myweb.core
-  (:require [hiccup.core :as h]
-            [hiccup.core :as hf]))
+  (:require [net.cgrand.enlive-html :as enlive]
+            [ring.adapter.jetty :as jetty]))
 
-(h/html
-  [:h1 {:class "foo"} "Hello, World"])
+(enlive/deftemplate hello-tpl "hello.html"
+  [name]
+  [:h1] (enlive/do->
+        (enlive/wrap :main)
+        (enlive/html-content "Hurray"))
+  ;[:h1] (enlive/wrap :main)
+  ;[h1:] (enlive/set-attr :class "test")
+  ;[h1:] (enlive/html-content (str "Hello, " name)
+  )
 
-(h/html
-  [:h1#foo.bar "Hello"])
+;(hello-tpl "Kimmy")
 
-(h/html
-  [:section
-   [:p "Paragraph 1"]
-   [:p "Paragraph 2"]])
+; table tbody tr:first-of-type
+(enlive/defsnippet table-row-tpl "hello.html" [:table :tbody [:tr enlive/first-of-type]]
+ [rowdata]
+ [[:td (enlive/nth-of-type 1)]] (enlive/html-content (:id rowdata))
+ [[:td (enlive/nth-of-type 2)]] (enlive/html-content (:name rowdata))
+ [[:td (enlive/nth-of-type 3)]] (enlive/html-content (:date rowdata)))
 
-(h/html
-  [:ul
-   (for [item ["foo" "bar" "baz"]]
-     [:li item])])
+(enlive/deftemplate table-tpl "hello.html"
+  [rows]
+  [:h1] (enlive/html-content "Customers")
+  [:table :tbody] (enlive/content (map table-row-tpl rows)))
 
-(h/html
-  [:fieldset
-   [:label "Name"]
-   (hf/text-field "name" "Value")])
+(defn myapp [req]
+  {:body (table-tpl [{:id 1 :name "Jimmy" :date "Today"}
+                     {:id 2 :name "Jane" :date "Tomorrow"}
+                     {:id 2 :name "Deirdra" :date "Ever"}])
+         :status 200
+         :headers {"Content-Type" "text/html"}})
 
-(h/html
-  [:fieldset
-   (hf/drop-down "favorite-color"
-                  ["red" ["Blue" "blue"] ["Verde" "green"]])])
-
-(defn layout [content & options]
-  (let [opts (apply hash-map options)]
-    (h/html
-     [:html
-      [:head
-        :title (get opts :title "Hello, World")]]
-      [:body [:main content]])))
-(layout [:p "Hello"] :title "Hi")
-
-
+(defn -main []
+  (jetty/run-jetty myapp {:port 3000}))
 
